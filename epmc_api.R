@@ -1,38 +1,34 @@
 library(tidyverse)
 library(httr)
 
-epmc <-
-  POST('https://www.ebi.ac.uk/europepmc/webservices/rest/searchPOST?',
-       body = list(
-         query="Wellcome", 
-         format="json"),
-       encode="form"
-  )
-
-res <- content(epmc)
-
-res$resultList[[1]][[1]] %>% names
-res_df <- lapply(res$resultList[[1]], as_tibble) %>% bind_rows()
-
-# copy to clipboard, less list columns
-list_cols <- sapply(res_df, class) == 'list'
-res_df[, !list_cols] %>%
-  filter(pubType != 'preprint') %>%
-  clipr::write_clip()
-which(list_cols)
-
-# this also works
-get_response <- function(cursorMark='*') {
+get_response <- function(cursorMark='*', pageSize=100) {
   GET('https://www.ebi.ac.uk/europepmc/webservices/rest/search?',
       query = list(
         query='Wellcome',
         resultType='lite',
         cursorMark=cursorMark,
-        pageSize=100,
+        pageSize=pageSize,
         format='json')
   )
   
 }
-epmc_get <- get_response()
 
-res_get <- content(epmc_get)
+# intial call
+page_size <- 500
+epmc <- get_response()
+res <- content(epmc)
+wellcome_results <- res$resultList$result
+next_cursor <- res$nextCursorMark
+total_hits <- res$hitCount
+
+# page thru for rest of results
+remaining_pages <- ceiling((total_hits - length(wellcome_results)) / page_size)
+for(i in 1:remaining_pages) {
+  epmc <- get_response(cursorMark = next_cursor, pageSize = page_size)
+  res <- content(epmc)
+  wellcome_results <- c(wellcome_results, res$resultList$result)
+  next_cursor <- res$nextCursorMark
+  Sys.sleep(.1)
+  cat('Result count: ', length(wellcome_results), 'of ', total_hits, 
+      round(100*length(wellcome_results)/total_hits, 1), '%\n')
+}

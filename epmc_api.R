@@ -20,3 +20,19 @@ res_df[, !list_cols] %>%
   filter(pubType != 'preprint') %>%
   clipr::write_clip()
 which(list_cols)
+
+# this also works
+get_response <- function(cursorMark='*') {
+  GET('https://www.ebi.ac.uk/europepmc/webservices/rest/search?',
+      query = list(
+        query='Wellcome',
+        resultType='lite',
+        cursorMark=cursorMark,
+        pageSize=100,
+        format='json')
+  )
+  
+}
+epmc_get <- get_response()
+
+res_get <- content(epmc_get)

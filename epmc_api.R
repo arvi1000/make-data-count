@@ -1,5 +1,6 @@
 library(tidyverse)
 library(httr)
+library(jsonlite)
 
 get_response <- function(cursorMark='*', pageSize=100) {
   GET('https://www.ebi.ac.uk/europepmc/webservices/rest/search?',
@@ -32,3 +33,5 @@ for(i in 1:remaining_pages) {
   cat('Result count: ', length(wellcome_results), 'of ', total_hits, 
       round(100*length(wellcome_results)/total_hits, 1), '%\n')
 }
+
+write_json(wellcome_results, 'wellcome_results.json')

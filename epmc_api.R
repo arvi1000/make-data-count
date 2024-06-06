@@ -2,7 +2,7 @@ library(tidyverse)
 library(httr)
 library(jsonlite)
 
-get_response <- function(cursorMark='*', pageSize=100) {
+get_response <- function(cursorMark='*', pageSize) {
   GET('https://www.ebi.ac.uk/europepmc/webservices/rest/search?',
       query = list(
         query='Wellcome',
@@ -16,7 +16,7 @@ get_response <- function(cursorMark='*', pageSize=100) {
 
 # intial call
 page_size <- 500
-epmc <- get_response()
+epmc <- get_response(pageSize=page_size)
 res <- content(epmc)
 wellcome_results <- res$resultList$result
 next_cursor <- res$nextCursorMark
@@ -34,4 +34,10 @@ for(i in 1:remaining_pages) {
       round(100*length(wellcome_results)/total_hits, 1), '%\n')
 }
 
-write_json(wellcome_results, 'wellcome_results.json')
+# note that if you don't pass auto_unbox=TRUE to toJSON then the results
+# end up as lists themselves. So upon reading the file back in, you get
+# [{"id":["38760645"],"source":["MED"],"pmid":["38760645"] ...
+# instead of how the object is returned from the code above, which is:
+# [{"id":"38760645","source":"MED","pmid":"38760645"
+write_json(wellcome_results, 'wellcome_results.json', auto_unbox = TRUE)
+

@@ -1,5 +1,4 @@
-*.csv
-*.json
+local_data/
 *.Rhistory
 .Rproj.user/
 .DS_Store

@@ -2,10 +2,10 @@ library(tidyverse)
 library(httr)
 library(jsonlite)
 
-get_response <- function(cursorMark='*', pageSize) {
+get_response <- function(query, cursorMark='*', pageSize) {
   GET('https://www.ebi.ac.uk/europepmc/webservices/rest/search?',
       query = list(
-        query='Wellcome',
+        query=query,
         resultType='lite',
         cursorMark=cursorMark,
         pageSize=pageSize,
@@ -16,7 +16,8 @@ get_response <- function(cursorMark='*', pageSize) {
 
 # intial call
 page_size <- 500
-epmc <- get_response(pageSize=page_size)
+query_text <- 'Wellcome'
+epmc <- get_response(query=query_text, pageSize=page_size)
 res <- content(epmc)
 wellcome_results <- res$resultList$result
 next_cursor <- res$nextCursorMark
@@ -25,7 +26,8 @@ total_hits <- res$hitCount
 # page thru for rest of results
 remaining_pages <- ceiling((total_hits - length(wellcome_results)) / page_size)
 for(i in 1:remaining_pages) {
-  epmc <- get_response(cursorMark = next_cursor, pageSize = page_size)
+  epmc <- get_response(query=query_text,
+                       cursorMark = next_cursor, pageSize = page_size)
   res <- content(epmc)
   wellcome_results <- c(wellcome_results, res$resultList$result)
   next_cursor <- res$nextCursorMark

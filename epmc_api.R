@@ -41,5 +41,5 @@ for(i in 1:remaining_pages) {
 # [{"id":["38760645"],"source":["MED"],"pmid":["38760645"] ...
 # instead of how the object is returned from the code above, which is:
 # [{"id":"38760645","source":"MED","pmid":"38760645"
-write_json(wellcome_results, 'wellcome_results.json', auto_unbox = TRUE)
+write_json(wellcome_results, 'local_data/wellcome_results.json', auto_unbox = TRUE)
 

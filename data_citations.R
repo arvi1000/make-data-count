@@ -46,13 +46,25 @@ get_response <- function(query, cursorMark='*', pageSize) {
 }
 
 atype <- data_sources[7, 1]
-api_res <- get_response(
+api_resp <- get_response(
   query = glue('(ACCESSION_TYPE:{atype})'),
   pageSize = 44)
 
-api_res$url
-results <- content(api_res)
+api_resp$url
+api_results <- content(api_resp)
 
 pkg_res <- epmc_search('(ACCESSION_TYPE:chebi)', limit = 44)
 
+# and those from file
+api_results$resultList$result[[1]]
 
+# Aha! Accession type is already in there!
+
+
+epmc_search("PMC10669250")
+
+httr::GET('https://www.ebi.ac.uk/europepmc/webservices/rest/search?', 
+          query = list(query='PMC10669250',
+                       resultType='lite',
+                       format='json'))
+            

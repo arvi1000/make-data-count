@@ -2,11 +2,13 @@ library(data.table)
 library(clipr)
 library(tidyverse)
 
+# load data ----
 fls <- list.files('data-v1.1/', full.names = T)
 dats <- lapply(fls, fread)
 dat <- rbindlist(dats)
 rm(dats); gc()
 
+# eda ----
 nrow(dat) |> prettyNum(big.mark = ",")
 
 cardinality <- data.table(
@@ -30,5 +32,6 @@ dat %>%
   arrange(-n) %>%
   mutate(pct = n / nrow(dat) )
 
+# filter out CZI ----
 dat_datacite <- dat %>% filter(source=='datacite')
 write.csv(dat_datacite, 'mdc_datacite_only.csv', row.names = F)

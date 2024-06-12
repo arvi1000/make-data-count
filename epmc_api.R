@@ -15,7 +15,7 @@ get_response <- function(query, cursorMark='*', pageSize) {
 }
 
 # intial call
-page_size <- 500
+page_size <- 500 #apparently 1000 is the max
 query_text <- 'Wellcome'
 epmc <- get_response(query=query_text, pageSize=page_size)
 res <- content(epmc)
@@ -36,6 +36,7 @@ for(i in 1:remaining_pages) {
       round(100*length(wellcome_results)/total_hits, 1), '%\n')
 }
 
+# save in JSON format----
 # note that if you don't pass auto_unbox=TRUE to toJSON then the results
 # end up as lists themselves. So upon reading the file back in, you get
 # [{"id":["38760645"],"source":["MED"],"pmid":["38760645"] ...
@@ -43,3 +44,15 @@ for(i in 1:remaining_pages) {
 # [{"id":"38760645","source":"MED","pmid":"38760645"
 write_json(wellcome_results, 'local_data/wellcome_results.json', auto_unbox = TRUE)
 
+# save as flat file ----
+wellcome_df <- wellcome_results %>% lapply(unlist) %>% bind_rows
+
+# put these first and alpha sort after that
+# "id", "source", "pmid", "doi", "title", "authorString", "journalTitle", "pubYear" 
+new_col_order <- c(
+  names(wellcome_df)[1:8],  
+  sort(names(wellcome_df)[-(1:8)])
+)
+wellcome_df <- wellcome_df[, new_col_order]
+write.csv(wellcome_df, 
+          file = 'local_data/wellcome_results_tabular.csv', row.names = F)
